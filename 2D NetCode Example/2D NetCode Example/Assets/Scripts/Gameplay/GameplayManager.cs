@@ -66,6 +66,7 @@ public class GameplayManager : MonoBehaviour
 
     //TODO: Implement score tracking and reset/return to lobby functionality
 
+    //scoring without return to center
     public void PlayerScored(PlayerController player)
     {
         if (!NetworkServer.Instance.IsServer) return;
@@ -75,7 +76,7 @@ public class GameplayManager : MonoBehaviour
 
         Debug.Log($"Score: P1={_player1Score} P2={_player2Score}");
 
-        // Respawn both players in the center
+        // Respawn both players in the center: DID NOT GET TO
         foreach (var p in _players)
         {
             if (p.PlayerAvatar != null)
@@ -93,6 +94,7 @@ public class GameplayManager : MonoBehaviour
             EndGame(2);
     }
 
+    //getting which player won and asking to satrt a new game
     private void EndGame(int winner)
     {
         Debug.Log($"Player {winner} wins!");

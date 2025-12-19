@@ -172,6 +172,7 @@ public class PlayerAvatar : NetworkBehaviour
 
     #endregion
 
+    //when a player hits a goal post it compares which goal was hit
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (!IsServer) return;

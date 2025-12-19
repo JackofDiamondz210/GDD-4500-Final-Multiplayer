@@ -67,6 +67,7 @@ public class PlayerController : NetworkBehaviour
         _playerAvatar = playerAvatar;
     }
 
+    //sending player back to center
     public void Respawn()
     {
         if (_playerAvatar != null)
