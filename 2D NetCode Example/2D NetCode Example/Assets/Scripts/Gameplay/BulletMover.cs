@@ -4,7 +4,6 @@ using Unity.Netcode;
 [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
 public class BulletMover : NetworkBehaviour
 {
-    [SerializeField] private int _Damage = 10;
     [SerializeField] private float _Speed = 10f;
     [SerializeField] private float _LifeTime = 5f;
     [Space]
@@ -68,7 +67,7 @@ public class BulletMover : NetworkBehaviour
         PlayerAvatar playerAvatar = collision.gameObject.GetComponent<PlayerAvatar>();
         if (playerAvatar != null)
         {
-            playerAvatar.PlayerController.Health.Value -= _Damage;
+            playerAvatar.PlayerController.Respawn();
         }
 
         // Despawn the bullet

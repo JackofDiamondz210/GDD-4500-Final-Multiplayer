@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,6 +24,7 @@ public class PlayerAvatar : NetworkBehaviour
     private InputAction _shootAction;
 
     private Vector3 _spawnPoint;
+    private bool _canMove = true;
 
     private Vector2 _moveDirection;
 
@@ -66,13 +68,20 @@ public class PlayerAvatar : NetworkBehaviour
         _spawnPoint = transform.position;
         UpdateSprite();
 
+        _playerController.CharacterIndex.OnValueChanged += OnCharacterIndexChanged;
+
         this.name = $"Player Avatar {OwnerClientId}";
+    }
+
+    private void OnCharacterIndexChanged(int oldIndex, int newIndex)
+    {
+        UpdateSprite();
     }
 
     private void UpdateSprite()
     {
-        //make sure CharacterIndex is valid
-        int index = _playerController.CharacterIndex.Value;
+        int index = Mathf.Clamp(_playerController.CharacterIndex.Value, 0, _characterSprites.Length - 1);
+        _SpriteRenderer.sprite = _characterSprites[index];
 
     }
 
@@ -86,8 +95,11 @@ public class PlayerAvatar : NetworkBehaviour
         if (IsOwner) ReadLocalInput();
     }
 
+    //reading inputs for player actions
     private void ReadLocalInput()
     {
+        if (!_canMove) return;
+
         _moveDirection = _moveAction.ReadValue<Vector2>();
 
         // If the shoot action is triggered, request to shoot on the server
@@ -95,7 +107,7 @@ public class PlayerAvatar : NetworkBehaviour
         {
             Vector2 targetPosition = _camera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
-            Vector3 startPosition = this.transform.position + (Vector3)direction * 1f;
+            Vector3 startPosition = this.transform.position + (Vector3)direction * 2f;
 
             RequestShootServerRpc(startPosition, direction);
         }
@@ -104,6 +116,16 @@ public class PlayerAvatar : NetworkBehaviour
     private void FixedUpdate()
     {
         _rigidbody.AddForce(_moveDirection * _Speed * Time.fixedDeltaTime * 10f, ForceMode2D.Force);
+    }
+
+    //resetting player when he gets hit by bullet and respawns
+    public void ResetMovementState()
+    {
+        _moveDirection = Vector2.zero; // Stop input
+        if (_rigidbody != null)
+        {
+            _rigidbody.linearVelocity = Vector2.zero; //stop all motion
+        }
     }
 
     /// <summary>
@@ -128,6 +150,24 @@ public class PlayerAvatar : NetworkBehaviour
 
         // Server-owned projectile; everyone will see it
         projectileInstance.Spawn();
+    }
+
+    [ClientRpc]
+    public void RespawnClientRpc(Vector3 spawnPosition)
+    {
+        StartCoroutine(RespawnCoroutine(spawnPosition));
+    }
+
+
+    //making it so you can't move for a little bit when returning to spawn
+    public IEnumerator RespawnCoroutine(Vector3 spawnPosition)
+    {
+        transform.position = spawnPosition;
+        ResetMovementState();
+
+        _canMove = false; // disable input temporarily
+        yield return null; // wait one frame
+        _canMove = true; // re-enable input
     }
 
     #endregion

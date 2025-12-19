@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
+
+    public Vector3 SpawnPoint;
+
     // General purpose network variable to track if the player is ready, used in both the lobby and gameplay
     // This is managed by the server to make sure everything stays in sync when checking
     public NetworkVariable<bool> IsReady = new NetworkVariable<bool>
@@ -20,12 +23,6 @@ public class PlayerController : NetworkBehaviour
         NetworkVariableWritePermission.Owner
     );
 
-    public NetworkVariable<int> Health = new NetworkVariable<int>
-        (
-            100,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
 
     [SerializeField] private NetworkObject _PlayerAvatarPrefab;
     public NetworkObject PlayerAvatar => _PlayerAvatarPrefab;
@@ -47,8 +44,6 @@ public class PlayerController : NetworkBehaviour
 
         this.name = $"Player {OwnerClientId}";
 
-        Health.OnValueChanged += OnHealthChanged;
-
         DontDestroyOnLoad(this);
     }
 
@@ -58,8 +53,6 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
-
-        Health.OnValueChanged -= OnHealthChanged;
 
         // Remove the player from the list of connected players
         NetworkServer.Instance.RemovePlayer(this);
@@ -74,18 +67,21 @@ public class PlayerController : NetworkBehaviour
         _playerAvatar = playerAvatar;
     }
 
-    /// <summary>
-    /// Called when the health value changes
-    /// </summary>
-    /// <param name="previousValue">The previous value of the health</param>
-    /// <param name="newValue">The new value of the health</param>
-    private void OnHealthChanged(int previousValue, int newValue)
+    public void Respawn()
     {
-        if (newValue <= 0)
+        if (_playerAvatar != null)
         {
-            // TODO: Implement respawn logic
-            Health.Value = 100;
+            RespawnServerRpc();
         }
+    }
+
+    [Rpc(SendTo.Owner, InvokePermission = RpcInvokePermission.Server)]
+    private void RespawnServerRpc()
+    {
+        if (_playerAvatar == null) return;
+
+        //starting the respawn coroutine on the avatar after getting hit
+        _playerAvatar.StartCoroutine(_playerAvatar.RespawnCoroutine(SpawnPoint));
     }
 
     #endregion

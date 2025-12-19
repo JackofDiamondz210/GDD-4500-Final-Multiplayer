@@ -286,10 +286,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 100
   field of view: 60
   orthographic: 1
-  orthographic size: 8
+  orthographic size: 20
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -313,7 +313,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 787397965}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 5.797987e-17, y: -0.000000009836524, z: 5.7032035e-25, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -415,6 +415,8 @@ MonoBehaviour:
   _spawnPoints:
   - {fileID: 1333772199}
   - {fileID: 1132460044}
+  _player1GoalPrefab: {fileID: 0}
+  _player2GoalPrefab: {fileID: 0}
 --- !u!4 &1845159316
 Transform:
   m_ObjectHideFlags: 0
