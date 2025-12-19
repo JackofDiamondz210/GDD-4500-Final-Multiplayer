@@ -921,11 +921,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: ce1a1f66-9a76-41ad-b734-45f9ec1f84f3
+  cloudProjectId: f22fcc47-c27a-4196-810e-0387e439448f
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: NetCode Example
-  organizationId: the-dada-factory
+  projectName: Unity Netcode Example
+  organizationId: jackofdiamondz21
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

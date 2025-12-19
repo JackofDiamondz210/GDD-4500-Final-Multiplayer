@@ -79,6 +79,9 @@ MonoBehaviour:
   _Speed: 60
   _BulletPrefab: {fileID: 7892751699899840566, guid: bfd777ab2457240c782619d864f7d81e, type: 3}
   _SpriteRenderer: {fileID: 8247075169952976269}
+  _characterSprites:
+  - {fileID: 21300000, guid: f038a5bb3102784469980b597d2fbbeb, type: 3}
+  - {fileID: 21300000, guid: 51877533174f8c742892e2fccfb0695f, type: 3}
 --- !u!212 &8247075169952976269
 SpriteRenderer:
   m_ObjectHideFlags: 0

@@ -11,6 +11,8 @@ public class PlayerAvatar : NetworkBehaviour
     [Space]
     [SerializeField] private SpriteRenderer _SpriteRenderer;
 
+    [SerializeField] private Sprite[] _characterSprites;
+
     private PlayerController _playerController;
     public PlayerController PlayerController => _playerController;
 
@@ -62,9 +64,16 @@ public class PlayerAvatar : NetworkBehaviour
         gameObject.SetActive(true);
 
         _spawnPoint = transform.position;
-        _SpriteRenderer.color = _playerController.PlayerColor.Value;
+        UpdateSprite();
 
         this.name = $"Player Avatar {OwnerClientId}";
+    }
+
+    private void UpdateSprite()
+    {
+        //make sure CharacterIndex is valid
+        int index = _playerController.CharacterIndex.Value;
+
     }
 
     #endregion

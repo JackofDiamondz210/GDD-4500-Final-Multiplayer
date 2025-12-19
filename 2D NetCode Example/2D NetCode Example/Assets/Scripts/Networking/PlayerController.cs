@@ -13,13 +13,12 @@ public class PlayerController : NetworkBehaviour
             NetworkVariableWritePermission.Server
         );
 
-    // Network variable to track the player's color
-    public NetworkVariable<Color32> PlayerColor = new NetworkVariable<Color32>
-        (
-            new Color32(255, 255, 255, 255),
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Owner
-        );
+    // Network variable to track the player's choice
+    public NetworkVariable<int> CharacterIndex = new NetworkVariable<int>(
+        0,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Owner
+    );
 
     public NetworkVariable<int> Health = new NetworkVariable<int>
         (

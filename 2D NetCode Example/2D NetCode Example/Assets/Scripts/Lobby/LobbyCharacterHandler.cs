@@ -3,57 +3,77 @@ using UnityEngine.UI;
 
 public class LobbyCharacterHandler : MonoBehaviour
 {
-    [SerializeField] GameObject _SelectColorText;
-    [SerializeField] Image _PlayerColorImage;
-    [SerializeField] CanvasGroup _ColorSelectionRoot;
-    [SerializeField] Image _ReadyCheckmarkImage;
+    [Header("UI Elements")]
+    [SerializeField] private Image _PlayerSpriteImage;
+    [SerializeField] private Image _ReadyCheckmarkImage;
+    [SerializeField] private GameObject _SelectCharacterText;
+
+    [Header("Character Options")]
+    [SerializeField] private Sprite[] _CharacterOptions;
 
     private LobbyManager _lobbyManager;
     private PlayerController _player;
+    private bool _isOwner;
 
     public void Initialize(LobbyManager lobbyManager, PlayerController player, bool isOwner)
     {
         _lobbyManager = lobbyManager;
         _player = player;
+        _isOwner = isOwner;
 
-        _PlayerColorImage.color = player.PlayerColor.Value;
+        int index = Mathf.Clamp(_player.CharacterIndex.Value, 0, _CharacterOptions.Length - 1);
+        _PlayerSpriteImage.sprite = _CharacterOptions[index];
 
-        _player.PlayerColor.OnValueChanged += OnPlayerColorChanged;
+        _player.CharacterIndex.OnValueChanged += OnPlayerCharacterChanged;
         _player.IsReady.OnValueChanged += OnPlayerReadyChanged;
-
-        // If the player is the owner, make the color selection visible
-        _ColorSelectionRoot.gameObject.SetActive(isOwner);
-        _SelectColorText.SetActive(isOwner);
 
         _ReadyCheckmarkImage.gameObject.SetActive(false);
     }
 
     private void OnDestroy()
     {
-        _player.PlayerColor.OnValueChanged -= OnPlayerColorChanged;
+        _player.CharacterIndex.OnValueChanged -= OnPlayerCharacterChanged;
         _player.IsReady.OnValueChanged -= OnPlayerReadyChanged;
     }
 
-    private void OnPlayerColorChanged(Color32 oldColor, Color32 newColor)
+    #region Character Handling
+    private void OnPlayerCharacterChanged(int oldIndex, int newIndex)
     {
-        _PlayerColorImage.color = newColor;
+        if (newIndex >= 0 && newIndex < _CharacterOptions.Length)
+        {
+            _PlayerSpriteImage.sprite = _CharacterOptions[newIndex];
+        }
     }
 
-    public void ChangeColor(Image image)
+    //changing character based on the 2 options using the character index
+    public void ChangeCharacter(int characterIndex)
     {
-        // Hide the select color text and show the player color image
-        _SelectColorText.SetActive(false);
-        _PlayerColorImage.gameObject.SetActive(true);
+        if (!_isOwner) return;// only change owners sprite
 
-        // Set the player's color to the selected color, this is the network variable that will be synced to the server
-        _player.PlayerColor.Value = image.color;
+        if (_player == null) return;
+        if (characterIndex < 0 || characterIndex >= _CharacterOptions.Length) return;
 
-        // Once we've selected a color, allow the player to ready up
+        // Update networked character index
+        _player.CharacterIndex.Value = characterIndex;
+
+        // Update UI immediately
+        _PlayerSpriteImage.sprite = _CharacterOptions[characterIndex];
+
+        //Hiding the "Select Character" text
+        if (_SelectCharacterText != null)
+        {
+            _SelectCharacterText.SetActive(false);
+        }
+
+        // Optionally, allow the player to ready up once they've picked
         _lobbyManager.AllowReadyUp();
     }
+    #endregion
 
+    #region Ready Handling
     private void OnPlayerReadyChanged(bool oldValue, bool newValue)
     {
         _ReadyCheckmarkImage.gameObject.SetActive(newValue);
     }
+    #endregion
 }
