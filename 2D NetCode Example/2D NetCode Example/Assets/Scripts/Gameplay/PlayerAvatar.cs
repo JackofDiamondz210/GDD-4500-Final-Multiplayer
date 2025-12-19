@@ -171,4 +171,23 @@ public class PlayerAvatar : NetworkBehaviour
     }
 
     #endregion
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!IsServer) return;
+
+        var gm = NetworkServer.Instance.gameplayManager;
+        if (gm == null) return;
+
+        //Player 1 scores
+        if (collision.CompareTag("P1 Goal") && PlayerController == NetworkServer.Instance.ConnectedPlayers[0])
+        {
+            gm.PlayerScored(PlayerController);
+        }
+        //Player 2 scores
+        else if (collision.CompareTag("P2 Goal") && PlayerController == NetworkServer.Instance.ConnectedPlayers[1])
+        {
+            gm.PlayerScored(PlayerController);
+        }
+    }
 }

@@ -8,12 +8,16 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private List<PlayerController> _players = new List<PlayerController>();
 
     [SerializeField] List<Transform> _spawnPoints = new List<Transform>();
+    
+    //points to win
+    [SerializeField] private int _maxScore = 5;
 
-    [SerializeField] private NetworkObject _player1GoalPrefab;
-    [SerializeField] private NetworkObject _player2GoalPrefab;
+    //setting up points
+    private int _player1Score = 0;
+    private int _player2Score = 0;
 
-    private NetworkObject _player1GoalInstance;
-    private NetworkObject _player2GoalInstance;
+    //return to center after scoring position
+    [SerializeField] private Vector3 _centerSpawn = Vector3.zero;
 
     /// <summary>
     /// Initialize the gameplay manager, cache the instance of the gameplay manager in the network controller
@@ -28,6 +32,8 @@ public class GameplayManager : MonoBehaviour
         NetworkServer.Instance.GameplaySceneHasLoaded();
 
         AssignSpawnPoints();
+
+        _players = NetworkServer.Instance.ConnectedPlayers.ToList();
     }
 
     //tried to make it so that they respawn at their spawn point but decided to just make it 0,0
@@ -53,23 +59,59 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    //spawning goal posts
-    public void SpawnGoals()
-    {
-        if (!NetworkServer.Instance.IsServer) return;
-
-        _player1GoalInstance = Instantiate(_player1GoalPrefab, new Vector3(-33.5f, 0, 0), Quaternion.identity);
-        _player1GoalInstance.Spawn();
-
-        _player2GoalInstance = Instantiate(_player2GoalPrefab, new Vector3(33.5f, 0, 0), Quaternion.identity);
-        _player2GoalInstance.Spawn();
-    }
-
-
     /// <summary>
     /// Get the spawn point for the given player id
     /// </summary>
     public Transform GetSpawnPointByPlayerId(int playerId) => _spawnPoints[playerId];
 
     //TODO: Implement score tracking and reset/return to lobby functionality
+
+    public void PlayerScored(PlayerController player)
+    {
+        if (!NetworkServer.Instance.IsServer) return;
+
+        if (player == _players[0]) _player1Score++;
+        else if (player == _players[1]) _player2Score++;
+
+        Debug.Log($"Score: P1={_player1Score} P2={_player2Score}");
+
+        // Respawn both players in the center
+        foreach (var p in _players)
+        {
+            if (p.PlayerAvatar != null)
+            {
+                p.PlayerAvatar.transform.position = _centerSpawn;
+                Rigidbody2D rb = p.PlayerAvatar.GetComponent<Rigidbody2D>();
+                if (rb != null) rb.linearVelocity = Vector2.zero;
+            }
+        }
+
+        // Check for win
+        if (_player1Score >= _maxScore)
+            EndGame(1);
+        else if (_player2Score >= _maxScore)
+            EndGame(2);
+    }
+
+    private void EndGame(int winner)
+    {
+        Debug.Log($"Player {winner} wins!");
+
+        // Reset scores
+        _player1Score = 0;
+        _player2Score = 0;
+
+        // Reset players to center
+        foreach (var p in _players)
+        {
+            if (p.PlayerAvatar != null)
+            {
+                p.PlayerAvatar.transform.position = _centerSpawn;
+                Rigidbody2D rb = p.PlayerAvatar.GetComponent<Rigidbody2D>();
+                if (rb != null) rb.linearVelocity = Vector2.zero;
+            }
+        }
+
+        // TODO: Show UI asking "Play Again?" or "Quit"
+    }
 }
